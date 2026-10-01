@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koti • 棲 Salon 線上預約系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        morandi: {
+                            mint: '#A4B4A6',
+                            lightMint: '#EBF1EC',
+                            beige: '#EFECE6',
+                            darkBeige: '#D4CFC4',
+                            brown: '#8B7D76',
+                            darkBrown: '#544A43',
+                            sage: '#7C8C7E',
+                            accent: '#C2A89E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', '"Noto Serif TC"', 'sans-serif'],
+                        serif: ['"Noto Serif TC"', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Serif TC', sans-serif;
+            background-color: #F7F5F0;
+            color: #544A43;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #EFECE6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #A4B4A6;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-morandi-beige min-h-screen flex flex-col justify-between antialiased selection:bg-morandi-mint selection:text-white">
+
+    <header class="w-full bg-white/80 backdrop-blur-md border-b border-morandi-darkBeige/30 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex flex-col">
+                <h1 class="font-serif font-bold text-lg tracking-wider text-morandi-darkBrown">Koti • 棲 Salon 線上預約系統</h1>
+                <p class="text-[9px] tracking-widest text-morandi-brown font-medium mt-0.5">HAIRCUT | PERM | HAIR COLOR | HAIR TREATMENT | SCALP CARE</p>
+            </div>
+            <!-- Admin Entry Icon -->
+            <button id="adminLoginTrigger" class="w-8 h-8 rounded-full bg-morandi-lightMint/60 hover:bg-morandi-mint text-morandi-darkBrown hover:text-white transition-all flex items-center justify-center text-xs shadow-xs cursor-pointer" title="後台管理">
+                ⚙
+            </button>
+        </div>
+    </header>
+
+    <main id="clientView" class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
+        <!-- Hero Banner with exact requested text and 4 feature badges -->
+        <div class="relative bg-gradient-to-r from-morandi-lightMint to-[#E2EAE3] rounded-3xl p-6 sm:p-10 mb-8 shadow-sm overflow-hidden border border-morandi-mint/20">
+            <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-morandi-mint/20 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="relative z-10 max-w-xl">
+                <p class="text-sm sm:text-base font-medium text-morandi-darkBrown leading-relaxed mb-6 whitespace-pre-line"><span class="text-3xl sm:text-5xl font-serif font-bold text-morandi-darkBrown tracking-wide">Koti</span> 是你可以自在停留、做自己的地方
+給自己一段棲息的時光，預約質感新造型</p>
+                
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <div class="bg-white/80 backdrop-blur-xs rounded-2xl px-4 py-3 flex items-center gap-2.5 shadow-xs border border-morandi-mint/20">
+                        <span class="text-base">✨</span>
+                        <span class="text-xs font-semibold text-morandi-darkBrown">質感染髮</span>
+                    </div>
+                    <div class="bg-white/80 backdrop-blur-xs rounded-2xl px-4 py-3 flex items-center gap-2.5 shadow-xs border border-morandi-mint/20">
+                        <span class="text-base">✂️</span>
+                        <span class="text-xs font-semibold text-morandi-darkBrown">韓系慵懶剪燙</span>
+                    </div>
+                    <div class="bg-white/80 backdrop-blur-xs rounded-2xl px-4 py-3 flex items-center gap-2.5 shadow-xs border border-morandi-mint/20">
+                        <span class="text-base">🌿</span>
+                        <span class="text-xs font-semibold text-morandi-darkBrown">頭皮深層淨化</span>
+                    </div>
+                    <div class="bg-white/80 backdrop-blur-xs rounded-2xl px-4 py-3 flex items-center gap-2.5 shadow-xs border border-morandi-mint/20">
+                        <span class="text-base">💧</span>
+                        <span class="text-xs font-semibold text-morandi-darkBrown">深層護髮</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-morandi-darkBeige/20">
+            <form id="bookingForm" class="space-y-8">
+                
+                <div>
+                    <label class="block font-serif font-bold text-lg text-morandi-darkBrown mb-4 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-morandi-mint text-white text-xs flex items-center justify-center font-sans font-semibold">1</span>
+                        選擇預約服務項目
+                    </label>
+                    <div id="serviceCheckboxContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-serif font-bold text-lg text-morandi-darkBrown mb-4 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-morandi-mint text-white text-xs flex items-center justify-center font-sans font-semibold">2</span>
+                        指定設計師
+                    </label>
+                    <div id="stylistRadioContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-serif font-bold text-lg text-morandi-darkBrown mb-4 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-morandi-mint text-white text-xs flex items-center justify-center font-sans font-semibold">3</span>
+                        預約人數設定
+                    </label>
+                    <div class="border-2 border-morandi-darkBeige/30 rounded-2xl p-5 bg-white flex flex-col justify-between max-w-sm">
+                        <div>
+                            <span class="font-semibold text-morandi-darkBrown text-sm block mb-1">選擇來店位客人數</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-4 my-4">
+                            <button type="button" id="decreaseGuests" class="w-10 h-10 rounded-xl bg-morandi-lightMint text-morandi-darkBrown font-bold text-lg hover:bg-morandi-mint hover:text-white transition-all flex items-center justify-center cursor-pointer">-</button>
+                            <span id="guestCountDisplay" class="font-serif font-bold text-2xl text-morandi-darkBrown w-12 text-center">1</span>
+                            <input type="hidden" id="guestCount" value="1">
+                            <button type="button" id="increaseGuests" class="w-10 h-10 rounded-xl bg-morandi-lightMint text-morandi-darkBrown font-bold text-lg hover:bg-morandi-mint hover:text-white transition-all flex items-center justify-center cursor-pointer">+</button>
+                        </div>
+                        <div class="text-center text-xs text-morandi-sage">
+                            目前選擇：<strong id="guestText" class="text-morandi-darkBrown">1 位貴賓</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-serif font-bold text-lg text-morandi-darkBrown mb-4 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-morandi-mint text-white text-xs flex items-center justify-center font-sans font-semibold">4</span>
+                        選擇預約日期與時段
+                    </label>
+                    
+                    <div class="mb-4 flex flex-wrap items-center gap-3">
+                        <div class="relative">
+                            <label class="block text-xs font-semibold text-morandi-brown mb-1.5 uppercase tracking-wider">選擇日期</label>
+                            <div class="relative inline-flex items-center gap-2">
+                                <input type="text" id="bookingDateDisplay" readonly class="w-full sm:w-48 bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-4 py-2.5 text-sm text-morandi-darkBrown font-semibold cursor-pointer" value="">
+                                <button type="button" id="moreDateBtn" class="bg-morandi-lightMint hover:bg-morandi-mint text-morandi-darkBrown hover:text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                    More
+                                </button>
+                            </div>
+                        </div>
+                        <p id="holidayAlertMsg" class="text-xs text-red-500 font-semibold mt-1.5 hidden w-full">⚠ 當日店休，暫不開放預約。</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-morandi-brown mb-2.5 uppercase tracking-wider">選擇時段 (點擊下方時段進行預約)</label>
+                        <div id="timeSlotsGrid" class="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
+                            <!-- Time slots generated via JS -->
+                        </div>
+                        <input type="hidden" id="selectedTime" required>
+                        <p id="timeError" class="text-xs text-red-500 mt-2 hidden">請選擇一個可預約的時段。</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-serif font-bold text-lg text-morandi-darkBrown mb-4 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-morandi-mint text-white text-xs flex items-center justify-center font-sans font-semibold">5</span>
+                        填寫聯絡資訊
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-morandi-brown mb-1.5 uppercase tracking-wider">真實姓名</label>
+                            <input type="text" id="clientName" placeholder="例如：王大明" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-4 py-2.5 text-sm text-morandi-darkBrown focus:outline-none focus:ring-2 focus:ring-morandi-mint" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-morandi-brown mb-1.5 uppercase tracking-wider">手機號碼</label>
+                            <input type="tel" id="clientPhone" placeholder="例如：0912345678" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-4 py-2.5 text-sm text-morandi-darkBrown focus:outline-none focus:ring-2 focus:ring-morandi-mint" required>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-semibold text-morandi-brown mb-1.5 uppercase tracking-wider">備註或髮況需求（選填）</label>
+                        <textarea id="clientNote" rows="2" placeholder="例如：頭髮先前有染黑過、想要霧感棕色等..." class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-4 py-2.5 text-sm text-morandi-darkBrown focus:outline-none focus:ring-2 focus:ring-morandi-mint"></textarea>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4 border-t border-morandi-darkBeige/25 flex flex-col sm:flex-row items-center justify-end gap-4">
+                    <button type="submit" id="submitBookingBtn" class="w-full sm:w-auto bg-morandi-darkBrown hover:bg-morandi-brown text-white font-medium text-sm px-8 py-3.5 rounded-2xl shadow-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer">
+                        <span>確認送出預約並連動 LINE</span>
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M5 13h11.586l-4.293 4.293 1.414 1.414L20.414 12l-7.707-7.707-1.414 1.414L16.586 11H5z"/></svg>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </main>
+
+    <div id="adminView" class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 hidden">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-morandi-darkBeige/30 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+                <span class="text-xs uppercase tracking-wider text-morandi-sage font-bold">Koti • 棲 Salon</span>
+                <h2 class="font-serif font-bold text-2xl text-morandi-darkBrown">管理員後台控制中心</h2>
+            </div>
+            <button id="exitAdminBtn" class="bg-morandi-lightMint hover:bg-morandi-mint text-morandi-darkBrown text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer">
+                ← 返回前台預約首頁
+            </button>
+        </div>
+
+        <!-- Admin Navigation Tabs -->
+        <div class="flex flex-wrap gap-2 mb-6 border-b border-morandi-darkBeige/30 pb-4">
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-morandi-darkBrown text-white transition-all cursor-pointer" data-tab="tabAppointments">預約</button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-morandi-darkBrown hover:bg-morandi-lightMint transition-all cursor-pointer" data-tab="tabHistory">消費紀錄</button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-morandi-darkBrown hover:bg-morandi-lightMint transition-all cursor-pointer" data-tab="tabClients">建立客戶資料</button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-morandi-darkBrown hover:bg-morandi-lightMint transition-all cursor-pointer" data-tab="tabTimeSlots">時段開放</button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-morandi-darkBrown hover:bg-morandi-lightMint transition-all cursor-pointer" data-tab="tabStylists">設計師</button>
+            <button class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-morandi-darkBrown hover:bg-morandi-lightMint transition-all cursor-pointer" data-tab="tabHolidays">店休</button>
+        </div>
+
+        <!-- Tab 1: Appointments -->
+        <div id="tabAppointments" class="admin-tab-content space-y-4">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-morandi-darkBeige/20">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                    <h3 class="font-serif font-bold text-lg text-morandi-darkBrown">預約時段排程管理</h3>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs text-morandi-brown">篩選日期：</label>
+                        <input type="date" id="adminAptDateFilter" class="bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-1.5 text-xs text-morandi-darkBrown">
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-morandi-darkBrown">
+                        <thead class="bg-morandi-beige/50 text-morandi-brown border-b border-morandi-darkBeige/20">
+                            <tr>
+                                <th class="p-3">時段</th>
+                                <th class="p-3">姓名 / 電話</th>
+                                <th class="p-3">項目 / 人數</th>
+                                <th class="p-3">設計師</th>
+                                <th class="p-3">備註</th>
+                                <th class="p-3 text-right">操作 (🖊️填寫消費 / 🗑刪除)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminAppointmentsTableBody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: History -->
+        <div id="tabHistory" class="admin-tab-content space-y-4 hidden">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-morandi-darkBeige/20">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                    <h3 class="font-serif font-bold text-lg text-morandi-darkBrown">客戶消費歷史紀錄查詢</h3>
+                    <div class="flex items-center gap-3">
+                        <input type="text" id="historySearchInput" placeholder="輸入客戶姓名或電話..." class="bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-xs text-morandi-darkBrown w-48 sm:w-64 focus:ring-2 focus:ring-morandi-mint">
+                        <button type="button" id="searchHistoryBtn" class="bg-morandi-darkBrown text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-morandi-brown transition-all cursor-pointer">查詢</button>
+                    </div>
+                </div>
+                <div id="historyResultContainer" class="space-y-6">
+                    <div class="text-center py-10 text-morandi-brown text-xs">請輸入客戶姓名或電話進行查詢</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Clients -->
+        <div id="tabClients" class="admin-tab-content space-y-4 hidden">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-morandi-darkBeige/20">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-serif font-bold text-lg text-morandi-darkBrown">建立與管理客戶資料</h3>
+                    <button id="addClientBtn" class="bg-morandi-mint text-white text-xs font-bold px-3.5 py-2 rounded-xl hover:bg-morandi-sage transition-all cursor-pointer">+ 手動建立新客戶</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-morandi-darkBrown">
+                        <thead class="bg-morandi-beige/50 text-morandi-brown border-b border-morandi-darkBeige/20">
+                            <tr>
+                                <th class="p-3">姓名</th>
+                                <th class="p-3">電話</th>
+                                <th class="p-3">加入日期</th>
+                                <th class="p-3">備註</th>
+                                <th class="p-3 text-right">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminClientsTableBody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Time Slots -->
+        <div id="tabTimeSlots" class="admin-tab-content space-y-4 hidden">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-morandi-darkBeige/20">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div>
+                        <h3 class="font-serif font-bold text-lg text-morandi-darkBrown mb-1">時段開放與控管</h3>
+                        <p class="text-xs text-morandi-brown">可針對特定日期選擇哪些時段對外開放預約。</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-semibold text-morandi-brown">設定日期：</label>
+                        <input type="date" id="adminTimeSlotConfigDate" class="bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-1.5 text-xs text-morandi-darkBrown">
+                    </div>
+                </div>
+                <div id="adminTimeSlotsConfigGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 mb-6">
+                    <!-- Populated via JS -->
+                </div>
+                <button type="button" id="saveTimeSlotsBtn" class="bg-morandi-darkBrown text-white text-xs font-bold px-6 py-2.5 rounded-xl hover:bg-morandi-brown transition-all cursor-pointer">儲存該日時段設定</button>
+            </div>
+        </div>
+
+        <!-- Tab 5: Stylists -->
+        <div id="tabStylists" class="admin-tab-content space-y-4 hidden">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-morandi-darkBeige/20">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-serif font-bold text-lg text-morandi-darkBrown">設計師名單與營收統計</h3>
+                    <button id="addStylistBtn" class="bg-morandi-mint text-white text-xs font-bold px-3.5 py-2 rounded-xl hover:bg-morandi-sage transition-all cursor-pointer">+ 新增設計師</button>
+                </div>
+                <div class="space-y-3" id="adminStylistsList">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 6: Holidays -->
+        <div id="tabHolidays" class="admin-tab-content space-y-4 hidden">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-morandi-darkBeige/20 max-w-xl">
+                <h3 class="font-serif font-bold text-lg text-morandi-darkBrown mb-2">沙龍店休與公休設定</h3>
+                <p class="text-xs text-morandi-brown mb-6">設定特定日期為店休。</p>
+                <form id="holidayForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-morandi-brown mb-1.5 uppercase tracking-wider">選擇要設為店休的日期</label>
+                        <input type="date" id="newHolidayDate" class="w-full sm:w-72 bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-4 py-2.5 text-sm text-morandi-darkBrown focus:outline-none focus:ring-2 focus:ring-morandi-mint" required>
+                    </div>
+                    <button type="submit" class="bg-morandi-darkBrown text-white text-xs font-bold px-6 py-2.5 rounded-xl hover:bg-morandi-brown transition-all cursor-pointer">新增店休日</button>
+                </form>
+                <div class="mt-8">
+                    <h4 class="font-serif font-bold text-sm text-morandi-darkBrown mb-3">已設定的店休日列表：</h4>
+                    <ul id="holidaysListUl" class="space-y-2 text-xs">
+                        <!-- Populated via JS -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Picker Modal -->
+    <div id="datePickerModal" class="fixed inset-0 bg-morandi-darkBrown/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-xl border border-morandi-darkBeige/30 text-center animate-fade-in relative">
+            <button type="button" id="closeDateModalBtn" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-morandi-lightMint hover:bg-morandi-mint text-morandi-darkBrown hover:text-white transition-all flex items-center justify-center text-sm font-bold cursor-pointer">
+                ✕
+            </button>
+            <h3 class="font-serif font-bold text-lg text-morandi-darkBrown mb-2">選擇預約日期</h3>
+            <p class="text-xs text-morandi-brown mb-4">請點擊下方選擇您想要預約的日期</p>
+            
+            <div class="space-y-3 mb-6">
+                <button type="button" id="quickTodayBtn" class="w-full bg-morandi-lightMint/60 hover:bg-morandi-mint hover:text-white text-morandi-darkBrown font-semibold text-sm py-3 rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <span>📅 今天 (<span id="todayDateLabel"></span>)</span>
+                </button>
+                <button type="button" id="quickTomorrowBtn" class="w-full bg-morandi-lightMint/60 hover:bg-morandi-mint hover:text-white text-morandi-darkBrown font-semibold text-sm py-3 rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <span>📅 明天 (<span id="tomorrowDateLabel"></span>)</span>
+                </button>
+                <div class="pt-2 border-t border-morandi-darkBeige/20">
+                    <label class="block text-xs font-semibold text-morandi-brown mb-1.5 uppercase tracking-wider text-left">選擇其他日期</label>
+                    <input type="date" id="modalCalendarInput" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-4 py-3 text-sm text-morandi-darkBrown font-semibold focus:outline-none focus:ring-2 focus:ring-morandi-mint">
+                </div>
+            </div>
+
+            <button type="button" id="confirmDateBtn" class="w-full bg-morandi-darkBrown hover:bg-morandi-brown text-white text-xs font-semibold py-3 rounded-xl transition-all cursor-pointer">
+                確定選擇此日期
+            </button>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-morandi-darkBrown/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-xl border border-morandi-darkBeige/30 text-center animate-fade-in relative">
+            <button type="button" id="modalCloseXBtn" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-morandi-lightMint hover:bg-morandi-mint text-morandi-darkBrown hover:text-white transition-all flex items-center justify-center text-sm font-bold cursor-pointer">
+                ✕
+            </button>
+
+            <div class="w-14 h-14 bg-morandi-lightMint text-morandi-sage rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                ✨
+            </div>
+            <h3 class="font-serif font-bold text-xl text-morandi-darkBrown mb-2">預約資料準備完成！</h3>
+            <div class="bg-[#06C755]/10 border border-[#06C755]/30 rounded-2xl p-4 mb-6 text-xs text-[#058a3a] font-medium leading-relaxed">
+                💡 若您尚未加過 Koti • 棲 Salon 官方 LINE 好友，請先點擊下方按鈕加入好友後，再傳送預約訊息給小幫手喔！
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="button" id="closeModalBtn" class="flex-1 bg-morandi-beige hover:bg-morandi-darkBeige/50 text-morandi-darkBrown text-xs font-semibold py-3 rounded-xl transition-all cursor-pointer">
+                    返回修改
+                </button>
+                <a id="lineRedirectBtn" href="#" target="_blank" class="flex-1 bg-[#06C755] hover:bg-[#05b34b] text-white text-xs font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                    前往官方 LINE 傳送
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-morandi-darkBrown/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-xl border border-morandi-darkBeige/30 text-center">
+            <h3 class="font-serif font-bold text-lg text-morandi-darkBrown mb-2">管理員身分驗證</h3>
+            <p class="text-xs text-morandi-brown mb-4">請輸入後台管理密碼以繼續</p>
+            <form id="adminLoginForm" class="space-y-4">
+                <input type="password" id="adminPasswordInput" placeholder="請輸入密碼" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-4 py-2.5 text-sm text-morandi-darkBrown text-center focus:outline-none focus:ring-2 focus:ring-morandi-mint" required>
+                <p id="adminLoginError" class="text-xs text-red-500 hidden">密碼錯誤，請重新輸入。</p>
+                <div class="flex gap-2">
+                    <button type="button" id="closeAdminLoginBtn" class="flex-1 bg-morandi-beige hover:bg-morandi-darkBeige/50 text-morandi-darkBrown text-xs font-semibold py-2.5 rounded-xl transition-all cursor-pointer">取消</button>
+                    <button type="submit" class="flex-1 bg-morandi-darkBrown hover:bg-morandi-brown text-white text-xs font-semibold py-2.5 rounded-xl transition-all cursor-pointer">登入</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Consumption Modal -->
+    <div id="consumptionModal" class="fixed inset-0 bg-morandi-darkBrown/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-xl border border-morandi-darkBeige/30 max-h-[90vh] overflow-y-auto">
+            <h3 class="font-serif font-bold text-lg text-morandi-darkBrown mb-1">填寫消費紀錄</h3>
+            <p id="consumptionClientInfo" class="text-xs text-morandi-sage mb-4">客戶：— | 電話：—</p>
+            
+            <form id="consumptionForm" class="space-y-4 text-xs">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-bold text-morandi-darkBrown">消費項目與金額明細</span>
+                    <button type="button" id="addConsumptionRowBtn" class="bg-morandi-lightMint text-morandi-darkBrown px-3 py-1 rounded-xl font-bold hover:bg-morandi-mint hover:text-white transition-all cursor-pointer">+ 新增項目</button>
+                </div>
+
+                <div id="consumptionRowsContainer" class="space-y-3">
+                    <!-- Dynamic Rows -->
+                </div>
+
+                <div class="bg-morandi-beige/50 p-4 rounded-2xl flex items-center justify-between mt-4">
+                    <span class="font-serif font-bold text-sm text-morandi-darkBrown">折後總金額 (NT$)</span>
+                    <span id="consumptionTotalDisplay" class="font-serif font-bold text-xl text-morandi-sage">0</span>
+                    <input type="hidden" id="consumptionTotalInput" value="0">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">備註說明（選填）</label>
+                    <input type="text" id="consumptionNote" placeholder="例如：使用會員優惠、頭髮狀況..." class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown">
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="closeConsumptionModalBtn" class="flex-1 bg-morandi-beige hover:bg-morandi-darkBeige/50 text-morandi-darkBrown text-xs font-semibold py-2.5 rounded-xl transition-all cursor-pointer">取消</button>
+                    <button type="submit" class="flex-1 bg-morandi-darkBrown hover:bg-morandi-brown text-white text-xs font-semibold py-2.5 rounded-xl transition-all cursor-pointer">確認儲存並同步至消費紀錄</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Generic Client / Stylist Modal -->
+    <div id="adminGenericModal" class="fixed inset-0 bg-morandi-darkBrown/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-xl border border-morandi-darkBeige/30">
+            <h3 id="genericModalTitle" class="font-serif font-bold text-lg text-morandi-darkBrown mb-4">編輯資料</h3>
+            <div id="genericModalBody" class="space-y-4 text-xs">
+                <!-- Dynamically injected -->
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button" id="closeGenericModalBtn" class="flex-1 bg-morandi-beige hover:bg-morandi-darkBeige/50 text-morandi-darkBrown text-xs font-semibold py-2.5 rounded-xl transition-all cursor-pointer">取消</button>
+                <button type="button" id="saveGenericModalBtn" class="flex-1 bg-morandi-darkBrown hover:bg-morandi-brown text-white text-xs font-semibold py-2.5 rounded-xl transition-all cursor-pointer">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stylist Revenue Modal -->
+    <div id="stylistRevenueModal" class="fixed inset-0 bg-morandi-darkBrown/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-xl border border-morandi-darkBeige/30 text-center">
+            <h3 id="stylistRevModalTitle" class="font-serif font-bold text-lg text-morandi-darkBrown mb-4">設計師營收統計</h3>
+            <div id="stylistRevModalBody" class="space-y-4 text-xs my-4 text-left">
+                <!-- Injected revenue stats -->
+            </div>
+            <button type="button" id="closeStylistRevModalBtn" class="w-full bg-morandi-darkBrown text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-morandi-brown transition-all cursor-pointer">關閉</button>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-morandi-darkBrown/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-xl border border-morandi-darkBeige/30 text-center">
+            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">🗑</div>
+            <h3 class="font-serif font-bold text-lg text-morandi-darkBrown mb-2">確認刪除預約</h3>
+            <p id="deleteConfirmText" class="text-xs text-morandi-brown mb-6">確定要刪除此筆預約紀錄嗎？</p>
+            <div class="flex gap-2">
+                <button type="button" id="cancelDeleteBtn" class="flex-1 bg-morandi-beige hover:bg-morandi-darkBeige/50 text-morandi-darkBrown text-xs font-semibold py-2.5 rounded-xl transition-all cursor-pointer">取消</button>
+                <button type="button" id="confirmDeleteBtn" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-2.5 rounded-xl transition-all cursor-pointer">確定刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full bg-white border-t border-morandi-darkBeige/30 py-8 mt-12 text-center text-xs text-morandi-brown">
+        <div class="max-w-4xl mx-auto px-6 space-y-2">
+            <p class="font-serif text-morandi-darkBrown font-medium">Koti • 棲 Salon © 2026. All Rights Reserved.</p>
+            <p>營業時間：週一至週日 10:00 - 19:00</p>
+        </div>
+    </footer>
+
+    <script>
+        let storeData = {
+            services: [
+                "專業洗髮", "造型剪髮", "頭皮養護", "深層護髮", 
+                "質感染髮", "設計漂髮", "造型燙髮", "男士燙髮", 
+                "韓系髮根燙", "客制燙瀏海", "現場溝通"
+            ],
+            stylists: [
+                { name: "秀秀" }
+            ],
+            timeSlotsConfig: {},
+            holidays: [],
+            appointments: [],
+            history: [],
+            clients: []
+        };
+
+        const savedStore = localStorage.getItem('koti_store_data_v98');
+        if (savedStore) {
+            try { storeData = JSON.parse(savedStore); } catch(e) {}
+        }
+
+        // Ensure "秀秀" is always present in stylists
+        if (!storeData.stylists.some(s => s.name === "秀秀")) {
+            storeData.stylists.unshift({ name: "秀秀" });
+        }
+
+        function saveStoreData() {
+            localStorage.setItem('koti_store_data_v98', JSON.stringify(storeData));
+        }
+
+        function renderClientServices() {
+            const container = document.getElementById('serviceCheckboxContainer');
+            container.innerHTML = '';
+            storeData.services.forEach(srvName => {
+                const label = document.createElement('label');
+                label.className = "service-card cursor-pointer border-2 border-morandi-darkBeige/30 rounded-2xl p-4 hover:border-morandi-mint transition-all flex items-center gap-3 bg-white";
+                label.innerHTML = `
+                    <input type="checkbox" name="service" value="${srvName}" class="rounded text-morandi-sage focus:ring-morandi-mint w-4 h-4">
+                    <span class="font-semibold text-morandi-darkBrown text-sm">${srvName}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function renderClientStylists() {
+            const container = document.getElementById('stylistRadioContainer');
+            container.innerHTML = '';
+            if (storeData.stylists.length === 0) {
+                container.innerHTML = `<p class="text-xs text-morandi-brown italic">目前尚無指定設計師（將由現場安排）</p>`;
+                return;
+            }
+            storeData.stylists.forEach((st, idx) => {
+                const label = document.createElement('label');
+                label.className = "cursor-pointer border-2 border-morandi-darkBeige/30 rounded-2xl p-3.5 hover:border-morandi-mint transition-all flex items-center gap-3 bg-white";
+                label.innerHTML = `
+                    <input type="radio" name="stylist" value="${st.name}" class="text-morandi-sage focus:ring-morandi-mint" ${idx === 0 ? 'checked' : ''}>
+                    <span class="font-semibold text-morandi-darkBrown text-sm">${st.name}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        let currentSelectedDate = todayStr;
+        const dateDisplay = document.getElementById('bookingDateDisplay');
+        dateDisplay.value = currentSelectedDate;
+
+        // Date Picker Modal Handling
+        const datePickerModal = document.getElementById('datePickerModal');
+        const closeDateModalBtn = document.getElementById('closeDateModalBtn');
+        const moreDateBtn = document.getElementById('moreDateBtn');
+        const modalCalendarInput = document.getElementById('modalCalendarInput');
+        const quickTodayBtn = document.getElementById('quickTodayBtn');
+        const quickTomorrowBtn = document.getElementById('quickTomorrowBtn');
+        const confirmDateBtn = document.getElementById('confirmDateBtn');
+        const todayDateLabel = document.getElementById('todayDateLabel');
+        const tomorrowDateLabel = document.getElementById('tomorrowDateLabel');
+
+        const tomorrowDateObj = new Date();
+        tomorrowDateObj.setDate(tomorrowDateObj.getDate() + 1);
+        const tomorrowStr = tomorrowDateObj.toISOString().split('T')[0];
+
+        todayDateLabel.textContent = todayStr;
+        tomorrowDateLabel.textContent = tomorrowStr;
+        modalCalendarInput.min = todayStr;
+        modalCalendarInput.value = currentSelectedDate;
+
+        const openDateModal = () => {
+            modalCalendarInput.value = currentSelectedDate;
+            datePickerModal.classList.remove('hidden');
+        };
+
+        moreDateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openDateModal();
+        });
+
+        dateDisplay.addEventListener('click', (e) => {
+            e.preventDefault();
+            openDateModal();
+        });
+
+        closeDateModalBtn.addEventListener('click', () => {
+            datePickerModal.classList.add('hidden');
+        });
+
+        quickTodayBtn.addEventListener('click', () => {
+            currentSelectedDate = todayStr;
+            dateDisplay.value = currentSelectedDate;
+            datePickerModal.classList.add('hidden');
+            selectedTimeValue = "";
+            document.getElementById('selectedTime').value = "";
+            renderTimeSlots();
+        });
+
+        quickTomorrowBtn.addEventListener('click', () => {
+            currentSelectedDate = tomorrowStr;
+            dateDisplay.value = currentSelectedDate;
+            datePickerModal.classList.add('hidden');
+            selectedTimeValue = "";
+            document.getElementById('selectedTime').value = "";
+            renderTimeSlots();
+        });
+
+        confirmDateBtn.addEventListener('click', () => {
+            if (modalCalendarInput.value) {
+                currentSelectedDate = modalCalendarInput.value;
+                dateDisplay.value = currentSelectedDate;
+                datePickerModal.classList.add('hidden');
+                selectedTimeValue = "";
+                document.getElementById('selectedTime').value = "";
+                renderTimeSlots();
+            }
+        });
+
+        let currentGuests = 1;
+        const maxGuests = 5;
+        const guestCountInput = document.getElementById('guestCount');
+        const guestCountDisplay = document.getElementById('guestCountDisplay');
+        const guestText = document.getElementById('guestText');
+        
+        document.getElementById('decreaseGuests').addEventListener('click', () => {
+            if (currentGuests > 1) { currentGuests--; updateGuestUI(); }
+        });
+        document.getElementById('increaseGuests').addEventListener('click', () => {
+            if (currentGuests < maxGuests) { currentGuests++; updateGuestUI(); }
+        });
+        function updateGuestUI() {
+            guestCountDisplay.textContent = currentGuests;
+            guestCountInput.value = currentGuests;
+            guestText.textContent = `${currentGuests} 位貴賓`;
+        }
+
+        let selectedTimeValue = "";
+
+        const allPossibleSlots = [
+            "10:00", "10:30", "11:00", "11:30", 
+            "12:00", "12:30", "13:00", "13:30", 
+            "14:00", "14:30", "15:00", "15:30", 
+            "16:00", "16:30", "17:00", "17:30", 
+            "18:00", "18:30"
+        ];
+
+        function renderTimeSlots() {
+            const grid = document.getElementById('timeSlotsGrid');
+            const currentDate = currentSelectedDate;
+            const holidayAlert = document.getElementById('holidayAlertMsg');
+            const submitBtn = document.getElementById('submitBookingBtn');
+
+            const isHoliday = storeData.holidays.includes(currentDate);
+
+            if (isHoliday) {
+                holidayAlert.classList.remove('hidden');
+                holidayAlert.textContent = "⚠ 當日店休，暫不開放預約。";
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                holidayAlert.classList.add('hidden');
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            const bookedSlots = storeData.appointments.filter(a => a.date === currentDate).map(a => a.time);
+            const enabledSlotsForDate = storeData.timeSlotsConfig[currentDate] || allPossibleSlots;
+
+            grid.innerHTML = '';
+
+            const now = new Date();
+            const isToday = currentDate === todayStr;
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTimeMinutes = currentHour * 60 + currentMinute;
+
+            allPossibleSlots.forEach(slot => {
+                const isOpenInAdmin = enabledSlotsForDate.includes(slot);
+                const isBooked = bookedSlots.includes(slot) || isHoliday;
+                
+                const [slotH, slotM] = slot.split(':').map(Number);
+                const slotTimeMinutes = slotH * 60 + slotM;
+                const isPastTimeToday = isToday && slotTimeMinutes <= currentTimeMinutes;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                
+                if (!isOpenInAdmin || isPastTimeToday) {
+                    btn.className = "bg-morandi-beige/40 border border-morandi-darkBeige/30 rounded-xl py-3 px-2 text-center cursor-not-allowed opacity-75 select-none";
+                    btn.innerHTML = `
+                        <div class="text-xs font-semibold text-morandi-brown">${slot}</div>
+                        <div class="text-[10px] text-gray-500 font-bold mt-1">此時段不開放</div>
+                    `;
+                    btn.disabled = true;
+                } else if (isBooked) {
+                    btn.className = "bg-morandi-beige/40 border border-morandi-darkBeige/30 rounded-xl py-3 px-2 text-center cursor-not-allowed opacity-75 select-none";
+                    btn.innerHTML = `
+                        <div class="text-xs font-semibold text-morandi-brown line-through">${slot}</div>
+                        <div class="text-[10px] text-red-500 font-bold mt-1">${isHoliday ? '當日店休' : '時段已🈵'}</div>
+                    `;
+                    btn.disabled = true;
+                } else {
+                    const isSelected = selectedTimeValue === slot;
+                    btn.className = `time-slot-btn border rounded-xl py-3 px-2 text-center transition-all duration-200 cursor-pointer ${
+                        isSelected 
+                            ? 'bg-morandi-mint text-white border-morandi-mint shadow-sm' 
+                            : 'bg-white border-morandi-darkBeige/40 hover:border-morandi-mint text-morandi-darkBrown'
+                    }`;
+                    btn.innerHTML = `
+                        <div class="text-xs font-semibold">${slot}</div>
+                        <div class="text-[10px] ${isSelected ? 'text-white/90' : 'text-morandi-sage'} mt-1">${isSelected ? '已選擇' : '可預約'}</div>
+                    `;
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.time-slot-btn').forEach(b => {
+                            if (!b.disabled) {
+                                b.className = "time-slot-btn border border-morandi-darkBeige/40 bg-white hover:border-morandi-mint text-morandi-darkBrown rounded-xl py-3 px-2 text-center transition-all duration-200 cursor-pointer";
+                                b.querySelector('div:last-child').textContent = "可預約";
+                                b.querySelector('div:last-child').className = "text-[10px] text-morandi-sage mt-1";
+                            }
+                        });
+                        btn.className = "time-slot-btn border bg-morandi-mint text-white border-morandi-mint rounded-xl py-3 px-2 text-center transition-all duration-200 cursor-pointer shadow-sm";
+                        btn.querySelector('div:last-child').textContent = "已選擇";
+                        btn.querySelector('div:last-child').className = "text-[10px] text-white/90 mt-1";
+                        
+                        selectedTimeValue = slot;
+                        document.getElementById('selectedTime').value = slot;
+                        document.getElementById('timeError').classList.add('hidden');
+                    });
+                }
+                grid.appendChild(btn);
+            });
+        }
+
+        // Booking Submission & LINE Integration (@agi9889w)
+        const bookingForm = document.getElementById('bookingForm');
+        const successModal = document.getElementById('successModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalCloseXBtn = document.getElementById('modalCloseXBtn');
+        const lineRedirectBtn = document.getElementById('lineRedirectBtn');
+
+        bookingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if (!selectedTimeValue) {
+                document.getElementById('timeError').classList.remove('hidden');
+                document.getElementById('timeError').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            const checkedServices = Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => cb.value);
+            if (checkedServices.length === 0) {
+                alert('請至少選擇一項預約服務項目。');
+                return;
+            }
+            const serviceStr = checkedServices.join('、');
+
+            const stylistEl = document.querySelector('input[name="stylist"]:checked');
+            const stylist = stylistEl ? stylistEl.value : '不指定設計師';
+            const guests = currentGuests;
+            const date = currentSelectedDate;
+            const time = selectedTimeValue;
+            const name = document.getElementById('clientName').value;
+            const phone = document.getElementById('clientPhone').value;
+            const note = document.getElementById('clientNote').value || '無';
+
+            storeData.appointments.push({
+                id: Date.now(),
+                date, time, name, phone, services: checkedServices, guests, stylist, note
+            });
+            if (!storeData.clients.some(c => c.phone === phone)) {
+                storeData.clients.push({ id: Date.now(), name, phone, joinDate: todayStr, note: "" });
+            }
+            saveStoreData();
+
+            const lineMessage = `👤 姓名：${name}\n` +
+                                `📞 電話：${phone}\n` +
+                                `👥 人數：${guests} 位貴賓\n` +
+                                `📅 日期：${date}\n` +
+                                `⏰ 時段：${time}\n` +
+                                `✂️ 項目：${serviceStr}\n` +
+                                `👩‍🎨 設計師：${stylist}\n` +
+                                `💬 備註：${note}\n` +
+                                `--------------------------------\n` +
+                                `確認後直接幫我傳送即可，謝謝！🤍`;
+
+            const encodedMsg = encodeURIComponent(lineMessage);
+            lineRedirectBtn.href = `https://line.me/R/oaMessage/@agi9889w/?${encodedMsg}`;
+
+            successModal.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => { successModal.classList.add('hidden'); renderTimeSlots(); });
+        modalCloseXBtn.addEventListener('click', () => { successModal.classList.add('hidden'); renderTimeSlots(); });
+
+        // Admin Auth
+        const adminLoginTrigger = document.getElementById('adminLoginTrigger');
+        const adminLoginModal = document.getElementById('adminLoginModal');
+        const closeAdminLoginBtn = document.getElementById('closeAdminLoginBtn');
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        const adminPasswordInput = document.getElementById('adminPasswordInput');
+        const adminLoginError = document.getElementById('adminLoginError');
+
+        const clientView = document.getElementById('clientView');
+        const adminView = document.getElementById('adminView');
+        const exitAdminBtn = document.getElementById('exitAdminBtn');
+
+        adminLoginTrigger.addEventListener('click', () => {
+            adminPasswordInput.value = '';
+            adminLoginError.classList.add('hidden');
+            adminLoginModal.classList.remove('hidden');
+        });
+
+        closeAdminLoginBtn.addEventListener('click', () => { adminLoginModal.classList.add('hidden'); });
+
+        adminLoginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (adminPasswordInput.value === '77887788') {
+                adminLoginModal.classList.add('hidden');
+                clientView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                document.getElementById('adminAptDateFilter').value = todayStr;
+                document.getElementById('adminTimeSlotConfigDate').value = todayStr;
+                renderAdminDashboard();
+            } else {
+                adminLoginError.classList.remove('hidden');
+            }
+        });
+
+        exitAdminBtn.addEventListener('click', () => {
+            adminView.classList.add('hidden');
+            clientView.classList.remove('hidden');
+            renderTimeSlots();
+        });
+
+        // Admin Tabs
+        const tabBtns = document.querySelectorAll('.admin-tab-btn');
+        const tabContents = document.querySelectorAll('.admin-tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => {
+                    b.className = "admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-morandi-darkBrown hover:bg-morandi-lightMint transition-all cursor-pointer";
+                });
+                btn.className = "admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-morandi-darkBrown text-white transition-all cursor-pointer";
+
+                const targetId = btn.getAttribute('data-tab');
+                tabContents.forEach(tc => tc.classList.add('hidden'));
+                document.getElementById(targetId).classList.remove('hidden');
+                renderAdminDashboard();
+            });
+        });
+
+        document.getElementById('adminAptDateFilter').addEventListener('change', renderAdminAppointments);
+        document.getElementById('adminTimeSlotConfigDate').addEventListener('change', renderAdminTimeSlotsConfig);
+
+        function renderAdminDashboard() {
+            renderAdminAppointments();
+            renderAdminClients();
+            renderAdminTimeSlotsConfig();
+            renderAdminStylists();
+            renderAdminHolidays();
+        }
+
+        function renderAdminAppointments() {
+            const filterDate = document.getElementById('adminAptDateFilter').value || todayStr;
+            const aptTbody = document.getElementById('adminAppointmentsTableBody');
+            aptTbody.innerHTML = '';
+
+            const dayApts = storeData.appointments.filter(a => a.date === filterDate);
+            
+            if (dayApts.length === 0) {
+                aptTbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-morandi-brown">該日期目前尚無預約紀錄</td></tr>`;
+                return;
+            }
+
+            dayApts.sort((a,b) => a.time.localeCompare(b.time));
+
+            dayApts.forEach(a => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-morandi-darkBeige/20 hover:bg-morandi-lightMint/30 transition-all";
+                
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-morandi-sage">${a.time}</td>
+                    <td class="p-3 font-semibold">${a.name}<br><span class="text-morandi-brown text-[10px]">${a.phone}</span></td>
+                    <td class="p-3">${Array.isArray(a.services) ? a.services.join('、') : a.services}<br><span class="text-[10px] text-morandi-sage">${a.guests} 位貴賓</span></td>
+                    <td class="p-3">${a.stylist}</td>
+                    <td class="p-3 max-w-xs truncate">${a.note}</td>
+                    <td class="p-3 text-right flex items-center justify-end gap-2">
+                        <button type="button" onclick="openConsumptionModal(${a.id})" class="w-8 h-8 bg-morandi-lightMint hover:bg-morandi-mint text-morandi-darkBrown hover:text-white rounded-xl flex items-center justify-center transition-all shadow-xs cursor-pointer" title="填寫消費紀錄">🖊️</button>
+                        <button type="button" onclick="promptDeleteAppointment(${a.id})" class="w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl flex items-center justify-center transition-all shadow-xs cursor-pointer" title="刪除預約">🗑️</button>
+                    </td>
+                `;
+
+                aptTbody.appendChild(tr);
+            });
+        }
+
+        let appointmentIdToDelete = null;
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        const deleteConfirmText = document.getElementById('deleteConfirmText');
+
+        window.promptDeleteAppointment = function(id) {
+            const apt = storeData.appointments.find(a => a.id === id);
+            if (!apt) return;
+            appointmentIdToDelete = id;
+            deleteConfirmText.textContent = `確定要刪除 ${apt.name} (${apt.date} ${apt.time}) 的預約嗎？`;
+            deleteConfirmModal.classList.remove('hidden');
+        };
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            appointmentIdToDelete = null;
+            deleteConfirmModal.classList.add('hidden');
+        });
+
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (appointmentIdToDelete !== null) {
+                storeData.appointments = storeData.appointments.filter(a => a.id !== appointmentIdToDelete);
+                saveStoreData();
+                renderAdminAppointments();
+                appointmentIdToDelete = null;
+            }
+            deleteConfirmModal.classList.add('hidden');
+        });
+
+        // Consumption Modal
+        let activeAptForConsumption = null;
+        const consumptionModal = document.getElementById('consumptionModal');
+        const closeConsumptionModalBtn = document.getElementById('closeConsumptionModalBtn');
+        const consumptionRowsContainer = document.getElementById('consumptionRowsContainer');
+        const addConsumptionRowBtn = document.getElementById('addConsumptionRowBtn');
+        const consumptionTotalDisplay = document.getElementById('consumptionTotalDisplay');
+        const consumptionTotalInput = document.getElementById('consumptionTotalInput');
+        const consumptionClientInfo = document.getElementById('consumptionClientInfo');
+
+        window.openConsumptionModal = function(aptId) {
+            const apt = storeData.appointments.find(a => a.id === aptId);
+            if (!apt) return;
+            activeAptForConsumption = apt;
+
+            consumptionClientInfo.textContent = `客戶：${apt.name} | 電話：${apt.phone} | 日期：${apt.date}`;
+            consumptionRowsContainer.innerHTML = '';
+
+            const existingHistory = storeData.history.find(h => h.phone === apt.phone && h.date === apt.date && h.time === apt.time);
+
+            if (existingHistory && Array.isArray(existingHistory.items)) {
+                existingHistory.items.forEach(item => {
+                    addConsumptionRow(item.name, item.amount, item.discount);
+                });
+                document.getElementById('consumptionNote').value = existingHistory.note || apt.note;
+            } else {
+                const initialServices = Array.isArray(apt.services) ? apt.services : [apt.services];
+                initialServices.forEach(sName => {
+                    addConsumptionRow(sName, 1000, 1000);
+                });
+                if (initialServices.length === 0) {
+                    addConsumptionRow('', 0, 0);
+                }
+                document.getElementById('consumptionNote').value = apt.note;
+            }
+
+            calculateConsumptionTotal();
+            consumptionModal.classList.remove('hidden');
+        };
+
+        closeConsumptionModalBtn.addEventListener('click', () => consumptionModal.classList.add('hidden'));
+
+        function addConsumptionRow(name = '', amount = 0, discount = 0) {
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-morandi-lightMint/30 p-3 rounded-2xl";
+            div.innerHTML = `
+                <div class="sm:col-span-5">
+                    <label class="block text-[10px] text-morandi-brown mb-0.5">項目名稱</label>
+                    <input type="text" class="row-name w-full bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1.5 text-xs text-morandi-darkBrown" value="${name}" required>
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="block text-[10px] text-morandi-brown mb-0.5">金額</label>
+                    <input type="number" class="row-amount w-full bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1.5 text-xs text-morandi-darkBrown" value="${amount}" required>
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="block text-[10px] text-morandi-brown mb-0.5">折後</label>
+                    <input type="number" class="row-discount w-full bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1.5 text-xs text-morandi-darkBrown font-bold text-morandi-sage" value="${discount}" required>
+                </div>
+                <div class="sm:col-span-1 flex items-end justify-center pt-3">
+                    <button type="button" class="remove-row-btn text-red-500 hover:text-red-700 font-bold text-xs p-1 cursor-pointer">✕</button>
+                </div>
+            `;
+            
+            div.querySelectorAll('input').forEach(inp => inp.addEventListener('input', calculateConsumptionTotal));
+            div.querySelector('.remove-row-btn').addEventListener('click', () => {
+                if (consumptionRowsContainer.children.length > 1) {
+                    div.remove();
+                    calculateConsumptionTotal();
+                } else {
+                    alert('至少需要保留一項消費項目');
+                }
+            });
+
+            consumptionRowsContainer.appendChild(div);
+        }
+
+        addConsumptionRowBtn.addEventListener('click', () => addConsumptionRow('', 0, 0));
+
+        function calculateConsumptionTotal() {
+            let total = 0;
+            document.querySelectorAll('.row-discount').forEach(inp => {
+                total += Number(inp.value) || 0;
+            });
+            consumptionTotalDisplay.textContent = total.toLocaleString();
+            consumptionTotalInput.value = total;
+        }
+
+        document.getElementById('consumptionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!activeAptForConsumption) return;
+
+            const items = [];
+            let total = 0;
+            document.querySelectorAll('#consumptionRowsContainer > div').forEach(row => {
+                const name = row.querySelector('.row-name').value;
+                const amount = Number(row.querySelector('.row-amount').value) || 0;
+                const discount = Number(row.querySelector('.row-discount').value) || 0;
+                items.push({ name, amount, discount });
+                total += discount;
+            });
+
+            const note = document.getElementById('consumptionNote').value || activeAptForConsumption.note;
+
+            const existingIndex = storeData.history.findIndex(h => h.phone === activeAptForConsumption.phone && h.date === activeAptForConsumption.date && h.time === activeAptForConsumption.time);
+
+            if (existingIndex !== -1) {
+                storeData.history[existingIndex].items = items;
+                storeData.history[existingIndex].total = total;
+                storeData.history[existingIndex].stylist = activeAptForConsumption.stylist;
+                storeData.history[existingIndex].note = note;
+            } else {
+                storeData.history.unshift({
+                    id: Date.now(),
+                    date: activeAptForConsumption.date,
+                    time: activeAptForConsumption.time,
+                    name: activeAptForConsumption.name,
+                    phone: activeAptForConsumption.phone,
+                    items,
+                    total,
+                    stylist: activeAptForConsumption.stylist,
+                    note
+                });
+            }
+
+            saveStoreData();
+            consumptionModal.classList.add('hidden');
+            alert('消費紀錄已成功儲存並同步更新！');
+        });
+
+        // History Search
+        const historySearchInput = document.getElementById('historySearchInput');
+        const searchHistoryBtn = document.getElementById('searchHistoryBtn');
+        const historyResultContainer = document.getElementById('historyResultContainer');
+
+        searchHistoryBtn.addEventListener('click', performHistorySearch);
+        historySearchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performHistorySearch(); });
+
+        function performHistorySearch() {
+            const keyword = historySearchInput.value.trim().toLowerCase();
+            if (!keyword) {
+                historyResultContainer.innerHTML = `<div class="text-center py-10 text-morandi-brown text-xs">請輸入客戶姓名或電話進行查詢</div>`;
+                return;
+            }
+
+            const matchingClients = storeData.clients.filter(c => c.name.toLowerCase().includes(keyword) || c.phone.includes(keyword));
+            const matchingHistory = storeData.history.filter(h => h.name.toLowerCase().includes(keyword) || h.phone.includes(keyword));
+
+            if (matchingClients.length === 0 && matchingHistory.length === 0) {
+                historyResultContainer.innerHTML = `<div class="text-center py-10 text-morandi-brown text-xs">找不到符合「${keyword}」的客戶資料與消費紀錄</div>`;
+                return;
+            }
+
+            const client = matchingClients[0] || { id: null, name: matchingHistory[0].name, phone: matchingHistory[0].phone, note: '' };
+            const clientHistory = storeData.history.filter(h => h.phone === client.phone || h.name === client.name);
+
+            const yearsMap = {};
+            clientHistory.forEach(h => {
+                const year = h.date.split('-')[0];
+                if (!yearsMap[year]) yearsMap[year] = [];
+                yearsMap[year].push(h);
+            });
+
+            let html = `
+                <div class="bg-morandi-lightMint/40 rounded-3xl p-6 border border-morandi-mint/30 space-y-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-morandi-darkBeige/30">
+                        <div class="w-full sm:w-auto space-y-2">
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] text-morandi-sage font-bold">姓名：</label>
+                                <input type="text" id="editClientNameInput" value="${client.name}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs font-semibold text-morandi-darkBrown">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] text-morandi-sage font-bold">電話：</label>
+                                <input type="text" id="editClientPhoneInput" value="${client.phone}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs text-morandi-darkBrown">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] text-morandi-sage font-bold">備註：</label>
+                                <input type="text" id="editClientNoteInput" value="${client.note || ''}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs text-morandi-darkBrown w-full">
+                            </div>
+                            <button type="button" onclick="updateClientDetails('${client.phone}')" class="bg-morandi-darkBrown text-white text-[11px] font-bold px-4 py-1.5 rounded-xl hover:bg-morandi-brown transition-all mt-1 cursor-pointer">儲存客戶資料修改</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-morandi-brown">選擇顯示年度：</span>
+                            <select id="historyYearSelect" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1.5 text-xs text-morandi-darkBrown">
+                                ${Object.keys(yearsMap).length > 0 ? Object.keys(yearsMap).sort().reverse().map(y => `<option value="${y}">${y} 年</option>`).join('') : `<option value="${new Date().getFullYear()}">${new Date().getFullYear()} 年</option>`}
+                            </select>
+                        </div>
+                    </div>
+                    <div id="historyYearDetails"></div>
+                </div>
+            `;
+
+            historyResultContainer.innerHTML = html;
+
+            const yearSelect = document.getElementById('historyYearSelect');
+            if (yearSelect) {
+                renderYearHistoryDetails(client.phone, yearSelect.value, yearsMap);
+                yearSelect.addEventListener('change', (e) => renderYearHistoryDetails(client.phone, e.target.value, yearsMap));
+            }
+        }
+
+        window.updateClientDetails = function(oldPhone) {
+            const newName = document.getElementById('editClientNameInput').value;
+            const newPhone = document.getElementById('editClientPhoneInput').value;
+            const newNote = document.getElementById('editClientNoteInput').value;
+
+            const targetClient = storeData.clients.find(c => c.phone === oldPhone);
+            if (targetClient) {
+                targetClient.name = newName;
+                targetClient.phone = newPhone;
+                targetClient.note = newNote;
+            } else {
+                storeData.clients.push({ id: Date.now(), name: newName, phone: newPhone, joinDate: todayStr, note: newNote });
+            }
+            storeData.history.forEach(h => {
+                if (h.phone === oldPhone) {
+                    h.name = newName;
+                    h.phone = newPhone;
+                }
+            });
+            saveStoreData();
+            alert('客戶資料已成功更新！');
+            performHistorySearch();
+        };
+
+        function renderYearHistoryDetails(phone, year, yearsMap) {
+            const container = document.getElementById('historyYearDetails');
+            const records = yearsMap[year] || [];
+            let yearTotal = 0;
+            records.forEach(r => yearTotal += Number(r.total) || 0);
+
+            let tableHtml = `
+                <div class="mb-4 flex items-center justify-between">
+                    <span class="text-xs font-serif font-bold text-morandi-darkBrown">📅 ${year} 年度消費總金額：</span>
+                    <span class="text-base font-serif font-bold text-morandi-sage">NT$ ${yearTotal.toLocaleString()}</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-morandi-darkBrown">
+                        <thead class="bg-white/80 text-morandi-brown border-b border-morandi-darkBeige/20">
+                            <tr>
+                                <th class="p-2.5">日期 / 時段</th>
+                                <th class="p-2.5">項目與金額折後</th>
+                                <th class="p-2.5">設計師</th>
+                                <th class="p-2.5 text-right">小計</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            if (records.length === 0) {
+                tableHtml += `<tr><td colspan="4" class="p-4 text-center text-morandi-brown">該年度尚無消費紀錄</td></tr>`;
+            } else {
+                records.forEach(r => {
+                    const itemsDesc = Array.isArray(r.items) 
+                        ? r.items.map(i => `${i.name} (原:${i.amount} → 折:${i.discount})`).join('<br>')
+                        : (r.service || '一般美髮服務');
+                    tableHtml += `
+                        <tr class="border-b border-morandi-darkBeige/20 bg-white/50">
+                            <td class="p-2.5 font-semibold">${r.date} ${r.time || ''}</td>
+                            <td class="p-2.5">${itemsDesc}<br><span class="text-[10px] text-morandi-sage">備註：${r.note || '無'}</span></td>
+                            <td class="p-2.5">${r.stylist || '不指定'}</td>
+                            <td class="p-2.5 text-right font-bold text-morandi-darkBrown">NT$ ${r.total}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            tableHtml += `</tbody></table></div>`;
+            container.innerHTML = tableHtml;
+        }
+
+        function renderAdminClients() {
+            const tbody = document.getElementById('adminClientsTableBody');
+            tbody.innerHTML = '';
+            if (storeData.clients.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-morandi-brown">目前尚無客戶建檔紀錄</td></tr>`;
+                return;
+            }
+            storeData.clients.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-morandi-darkBeige/20 hover:bg-morandi-lightMint/30";
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-morandi-darkBrown">${c.name}</td>
+                    <td class="p-3">${c.phone}</td>
+                    <td class="p-3">${c.joinDate}</td>
+                    <td class="p-3">${c.note || '無'}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="editClient(${c.id})" class="bg-morandi-lightMint hover:bg-morandi-mint text-morandi-darkBrown px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all mr-1 cursor-pointer">編輯</button>
+                        <button onclick="deleteClient(${c.id})" class="bg-red-100 hover:bg-red-200 text-red-600 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer">刪除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.deleteClient = function(id) {
+            storeData.clients = storeData.clients.filter(c => c.id !== id);
+            saveStoreData();
+            renderAdminClients();
+        };
+
+        function renderAdminTimeSlotsConfig() {
+            const grid = document.getElementById('adminTimeSlotsConfigGrid');
+            const cfgDate = document.getElementById('adminTimeSlotConfigDate').value || todayStr;
+            const currentEnabledSlots = storeData.timeSlotsConfig[cfgDate] || allPossibleSlots;
+
+            grid.innerHTML = '';
+            allPossibleSlots.forEach(slot => {
+                const isOpen = currentEnabledSlots.includes(slot);
+                const label = document.createElement('label');
+                label.className = "cursor-pointer border rounded-xl p-2.5 flex items-center gap-2 bg-white hover:border-morandi-mint text-xs";
+                label.innerHTML = `
+                    <input type="checkbox" value="${slot}" class="admin-slot-cb rounded text-morandi-sage focus:ring-morandi-mint" ${isOpen ? 'checked' : ''}>
+                    <span class="font-semibold text-morandi-darkBrown">${slot}</span>
+                `;
+                grid.appendChild(label);
+            });
+        }
+
+        document.getElementById('saveTimeSlotsBtn').addEventListener('click', () => {
+            const cfgDate = document.getElementById('adminTimeSlotConfigDate').value || todayStr;
+            const checkedCbs = document.querySelectorAll('.admin-slot-cb:checked');
+            storeData.timeSlotsConfig[cfgDate] = Array.from(checkedCbs).map(cb => cb.value);
+            saveStoreData();
+            alert(`已成功儲存 ${cfgDate} 的時段開放設定！`);
+        });
+
+        function renderAdminStylists() {
+            const container = document.getElementById('adminStylistsList');
+            container.innerHTML = '';
+            storeData.stylists.forEach((st, idx) => {
+                const div = document.createElement('div');
+                div.className = "border border-morandi-darkBeige/30 rounded-2xl p-4 flex items-center justify-between bg-white";
+                
+                const deleteBtnHtml = st.name === "秀秀" 
+                    ? `<span class="text-[10px] text-morandi-sage px-3 py-1.5 italic">預設固定</span>`
+                    : `<button type="button" onclick="deleteStylist(${idx})" class="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer">刪除</button>`;
+
+                div.innerHTML = `
+                    <div>
+                        <button type="button" onclick="showStylistRevenue('${st.name}')" class="font-bold text-morandi-darkBrown text-sm hover:underline text-left block cursor-pointer">
+                            ✂ ${st.name} <span class="text-[10px] text-morandi-sage font-normal ml-2">(點擊查看營收統計)</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${deleteBtnHtml}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.showStylistRevenue = function(stylistName) {
+            document.getElementById('stylistRevModalTitle').textContent = `設計師營收統計：${stylistName}`;
+            
+            const modalBody = document.getElementById('stylistRevModalBody');
+            modalBody.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-morandi-lightMint/30 p-3 rounded-2xl space-y-2 border border-morandi-mint/30">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-morandi-brown font-semibold">選擇查看日期：</label>
+                            <input type="date" id="revDateSelect" value="${todayStr}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs text-morandi-darkBrown">
+                        </div>
+                        <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-morandi-darkBeige/30">
+                            <span class="text-xs text-morandi-brown font-semibold">該日營收加總：</span>
+                            <span id="revDayResult" class="text-sm font-bold text-morandi-darkBrown">NT$ 0</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-morandi-lightMint/30 p-3 rounded-2xl space-y-2 border border-morandi-mint/30">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-morandi-brown font-semibold">選擇查看月份：</label>
+                            <input type="month" id="revMonthSelect" value="${todayStr.substring(0, 7)}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs text-morandi-darkBrown">
+                        </div>
+                        <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-morandi-darkBeige/30">
+                            <span class="text-xs text-morandi-brown font-semibold">該月營收加總：</span>
+                            <span id="revMonthResult" class="text-sm font-bold text-morandi-sage">NT$ 0</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('stylistRevenueModal').classList.remove('hidden');
+
+            const dateSel = document.getElementById('revDateSelect');
+            const monthSel = document.getElementById('revMonthSelect');
+            const dayRes = document.getElementById('revDayResult');
+            const monthRes = document.getElementById('revMonthResult');
+
+            function calculateRevs() {
+                const dVal = dateSel.value;
+                const mVal = monthSel.value;
+
+                let dayTotal = 0;
+                let monthTotal = 0;
+
+                storeData.history.forEach(h => {
+                    if (h.stylist === stylistName) {
+                        const amt = Number(h.total) || 0;
+                        if (h.date === dVal) dayTotal += amt;
+                        if (h.date.startsWith(mVal)) monthTotal += amt;
+                    }
+                });
+
+                dayRes.textContent = `NT$ ${dayTotal.toLocaleString()}`;
+                monthRes.textContent = `NT$ ${monthTotal.toLocaleString()}`;
+            }
+
+            calculateRevs();
+            dateSel.addEventListener('change', calculateRevs);
+            monthSel.addEventListener('change', calculateRevs);
+        };
+
+        document.getElementById('closeStylistRevModalBtn').addEventListener('click', () => {
+            document.getElementById('stylistRevenueModal').classList.add('hidden');
+        });
+
+        window.deleteStylist = function(idx) {
+            if (storeData.stylists[idx].name === "秀秀") {
+                alert("「秀秀」為固定預設設計師，不可刪除。");
+                return;
+            }
+            storeData.stylists.splice(idx, 1);
+            saveStoreData();
+            renderAdminStylists();
+            renderClientStylists();
+        };
+
+        document.getElementById('holidayForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const d = document.getElementById('newHolidayDate').value;
+            if (d && !storeData.holidays.includes(d)) {
+                storeData.holidays.push(d);
+                saveStoreData();
+                renderAdminHolidays();
+                document.getElementById('newHolidayDate').value = '';
+                alert('已成功新增店休日！');
+            }
+        });
+
+        function renderAdminHolidays() {
+            const ul = document.getElementById('holidaysListUl');
+            ul.innerHTML = '';
+            if (storeData.holidays.length === 0) {
+                ul.innerHTML = `<li class="text-morandi-brown">目前尚無額外設定的店休日</li>`;
+                return;
+            }
+            storeData.holidays.forEach((hDate, idx) => {
+                const li = document.createElement('li');
+                li.className = "flex items-center justify-between bg-morandi-lightMint/40 p-2.5 rounded-xl";
+                li.innerHTML = `
+                    <span class="font-semibold text-morandi-darkBrown">📅 ${hDate}</span>
+                    <button onclick="deleteHoliday(${idx})" class="text-red-600 hover:text-red-800 font-bold text-xs cursor-pointer">移除</button>
+                `;
+                ul.appendChild(li);
+            });
+        }
+
+        window.deleteHoliday = function(idx) {
+            storeData.holidays.splice(idx, 1);
+            saveStoreData();
+            renderAdminHolidays();
+        };
+
+        const genericModal = document.getElementById('adminGenericModal');
+        const closeGenericModalBtn = document.getElementById('closeGenericModalBtn');
+        const saveGenericModalBtn = document.getElementById('saveGenericModalBtn');
+        const genericModalTitle = document.getElementById('genericModalTitle');
+        const genericModalBody = document.getElementById('genericModalBody');
+        let currentModalMode = '';
+        let editingClientId = null;
+
+        closeGenericModalBtn.addEventListener('click', () => genericModal.classList.add('hidden'));
+
+        document.getElementById('addClientBtn').addEventListener('click', () => {
+            currentModalMode = 'client';
+            editingClientId = null;
+            genericModalTitle.textContent = "手動建立新客戶資料";
+            genericModalBody.innerHTML = `
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">姓名</label>
+                    <input type="text" id="cliName" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">電話</label>
+                    <input type="tel" id="cliPhone" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">備註</label>
+                    <input type="text" id="cliNote" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown">
+                </div>
+            `;
+            genericModal.classList.remove('hidden');
+        });
+
+        window.editClient = function(id) {
+            const client = storeData.clients.find(c => c.id === id);
+            if (!client) return;
+            currentModalMode = 'editClient';
+            editingClientId = id;
+            genericModalTitle.textContent = "編輯客戶資料與備註";
+            genericModalBody.innerHTML = `
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">姓名</label>
+                    <input type="text" id="cliName" value="${client.name}" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">電話</label>
+                    <input type="tel" id="cliPhone" value="${client.phone}" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">備註</label>
+                    <input type="text" id="cliNote" value="${client.note || ''}" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown">
+                </div>
+            `;
+            genericModal.classList.remove('hidden');
+        };
+
+        document.getElementById('addStylistBtn').addEventListener('click', () => {
+            currentModalMode = 'stylist';
+            genericModalTitle.textContent = "新增設計師";
+            genericModalBody.innerHTML = `
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">設計師名稱</label>
+                    <input type="text" id="styName" placeholder="例如：安娜" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+            `;
+            genericModal.classList.remove('hidden');
+        });
+
+        saveGenericModalBtn.addEventListener('click', () => {
+            if (currentModalMode === 'client') {
+                const name = document.getElementById('cliName').value;
+                const phone = document.getElementById('cliPhone').value;
+                const note = document.getElementById('cliNote').value;
+                if (!name || !phone) { alert('請填寫姓名與電話'); return; }
+                storeData.clients.push({ id: Date.now(), name, phone, joinDate: todayStr, note });
+            } else if (currentModalMode === 'editClient') {
+                const name = document.getElementById('cliName').value;
+                const phone = document.getElementById('cliPhone').value;
+                const note = document.getElementById('cliNote').value;
+                const client = storeData.clients.find(c => c.id === editingClientId);
+                if (client) {
+                    client.name = name;
+                    client.phone = phone;
+                    client.note = note;
+                }
+            } else if (currentModalMode === 'stylist') {
+                const name = document.getElementById('styName').value;
+                if (!name) { alert('請輸入設計師名稱'); return; }
+                if (!storeData.stylists.some(s => s.name === name)) {
+                    storeData.stylists.push({ name });
+                }
+                renderClientStylists();
+            }
+            saveStoreData();
+            genericModal.classList.add('hidden');
+            renderAdminDashboard();
+            alert('儲存成功！');
+        });
+
+        renderClientServices();
+        renderClientStylists();
+        renderTimeSlots();
+    </script>
+</body>
+</html>
