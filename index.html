@@ -490,9 +490,6 @@
     </div>
 
     <script>
-        // Google Apps Script 雲端同步 API 網址
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznZnBvvx3j9nhzvc767SnvwyTL9PJym8scyTCYke9A1XzJTZ0Yx54Xq_UcV8L7_MjE8A/exec";
-
         let storeData = {
             services: [
                 "專業洗髮", "造型剪髮", "頭皮養護", "深層護髮", 
@@ -521,32 +518,6 @@
 
         function saveStoreData() {
             localStorage.setItem('koti_store_data_v98', JSON.stringify(storeData));
-        }
-
-        // 從雲端 Google 試算表同步抓取預約資料
-        function syncAppointmentsFromCloud() {
-            fetch(GOOGLE_SCRIPT_URL)
-                .then(response => response.json())
-                .then(data => {
-                    if (Array.isArray(data)) {
-                        storeData.appointments = data.map((item, index) => ({
-                            id: item.created_at ? new Date(item.created_at).getTime() : index,
-                            date: item.date,
-                            time: item.time,
-                            name: item.name,
-                            phone: item.phone,
-                            services: item.service ? item.service.split('、') : [],
-                            guests: 1,
-                            stylist: item.designer || '秀秀',
-                            note: item.status || '已預約'
-                        }));
-                        renderTimeSlots();
-                        if (!document.getElementById('adminView').classList.contains('hidden')) {
-                            renderAdminAppointments();
-                        }
-                    }
-                })
-                .catch(error => console.error("雲端資料同步失敗:", error));
         }
 
         function renderClientServices() {
@@ -801,25 +772,6 @@
             const phone = document.getElementById('clientPhone').value;
             const note = document.getElementById('clientNote').value || '無';
 
-            const bookingPayload = {
-                name: name,
-                phone: phone,
-                date: date,
-                time: time,
-                service: serviceStr,
-                designer: stylist
-            };
-
-            // 將預約資料送往 Google 試算表雲端
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(bookingPayload)
-            }).catch(err => console.error("雲端寫入錯誤:", err));
-
             storeData.appointments.push({
                 id: Date.now(),
                 date, time, name, phone, services: checkedServices, guests, stylist, note
@@ -830,10 +782,18 @@
             saveStoreData();
 
             const lineMessage = `👤 姓名：${name}\n` +
-                                `📞 電話：${phone}\n` + `👥 人數：${guests} 位貴賓\n` +
-                                `📅 日期：${date}\n` + `⏰ 時段：${time}\n` +
-                                `✂️ 項目：${serviceStr}\n` + `👩‍🎨 設計師：${stylist}\n` +
-                                `💬 備註：${note}\n` + `--------------------------------\n` + `確認後直接幫我傳送即可，謝謝！🤍`;  const encodedMsg = encodeURIComponent(lineMessage); lineRedirectBtn.href = `https://line.me/R/oaMessage/@agi9889w/?${encodedMsg}`;
+                                `📞 電話：${phone}\n` +
+                                `👥 人數：${guests} 位貴賓\n` +
+                                `📅 日期：${date}\n` +
+                                `⏰ 時段：${time}\n` +
+                                `✂️ 項目：${serviceStr}\n` +
+                                `👩‍🎨 設計師：${stylist}\n` +
+                                `💬 備註：${note}\n` +
+                                `--------------------------------\n` +
+                                `確認後直接幫我傳送即可，謝謝！🤍`;
+
+            const encodedMsg = encodeURIComponent(lineMessage);
+            lineRedirectBtn.href = `https://line.me/R/oaMessage/@agi9889w/?${encodedMsg}`;
 
             successModal.classList.remove('hidden');
         });
@@ -869,7 +829,6 @@
                 adminView.classList.remove('hidden');
                 document.getElementById('adminAptDateFilter').value = todayStr;
                 document.getElementById('adminTimeSlotConfigDate').value = todayStr;
-                syncAppointmentsFromCloud(); // 進入後台時同步最新雲端資料
                 renderAdminDashboard();
             } else {
                 adminLoginError.classList.remove('hidden');
@@ -896,7 +855,6 @@
                 const targetId = btn.getAttribute('data-tab');
                 tabContents.forEach(tc => tc.classList.add('hidden'));
                 document.getElementById(targetId).classList.remove('hidden');
-                syncAppointmentsFromCloud();
                 renderAdminDashboard();
             });
         });
@@ -956,7 +914,41 @@
             const apt = storeData.appointments.find(a => a.id === id);
             if (!apt) return;
             appointmentIdToDelete = id;
-            deleteConfirmText.textContent = `確定要刪除 ${apt.name} (${apt.date} ${apt.time}) 的預約嗎？`; deleteConfirmModal.classList.remove('hidden'); };  cancelDeleteBtn.addEventListener('click', () => { appointmentIdToDelete = null; deleteConfirmModal.classList.add('hidden'); });  confirmDeleteBtn.addEventListener('click', () => { if (appointmentIdToDelete !== null) { storeData.appointments = storeData.appointments.filter(a => a.id !== appointmentIdToDelete); saveStoreData(); renderAdminAppointments(); appointmentIdToDelete = null; } deleteConfirmModal.classList.add('hidden'); });  // Consumption Modal let activeAptForConsumption = null; const consumptionModal = document.getElementById('consumptionModal'); const closeConsumptionModalBtn = document.getElementById('closeConsumptionModalBtn'); const consumptionRowsContainer = document.getElementById('consumptionRowsContainer'); const addConsumptionRowBtn = document.getElementById('addConsumptionRowBtn'); const consumptionTotalDisplay = document.getElementById('consumptionTotalDisplay'); const consumptionTotalInput = document.getElementById('consumptionTotalInput'); const consumptionClientInfo = document.getElementById('consumptionClientInfo');  window.openConsumptionModal = function(aptId) { const apt = storeData.appointments.find(a => a.id === aptId); if (!apt) return; activeAptForConsumption = apt;  consumptionClientInfo.textContent = `客戶：${apt.name} | 電話：${apt.phone} \vert{} 日期：${apt.date}`;
+            deleteConfirmText.textContent = `確定要刪除 ${apt.name} (${apt.date} ${apt.time}) 的預約嗎？`;
+            deleteConfirmModal.classList.remove('hidden');
+        };
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            appointmentIdToDelete = null;
+            deleteConfirmModal.classList.add('hidden');
+        });
+
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (appointmentIdToDelete !== null) {
+                storeData.appointments = storeData.appointments.filter(a => a.id !== appointmentIdToDelete);
+                saveStoreData();
+                renderAdminAppointments();
+                appointmentIdToDelete = null;
+            }
+            deleteConfirmModal.classList.add('hidden');
+        });
+
+        // Consumption Modal
+        let activeAptForConsumption = null;
+        const consumptionModal = document.getElementById('consumptionModal');
+        const closeConsumptionModalBtn = document.getElementById('closeConsumptionModalBtn');
+        const consumptionRowsContainer = document.getElementById('consumptionRowsContainer');
+        const addConsumptionRowBtn = document.getElementById('addConsumptionRowBtn');
+        const consumptionTotalDisplay = document.getElementById('consumptionTotalDisplay');
+        const consumptionTotalInput = document.getElementById('consumptionTotalInput');
+        const consumptionClientInfo = document.getElementById('consumptionClientInfo');
+
+        window.openConsumptionModal = function(aptId) {
+            const apt = storeData.appointments.find(a => a.id === aptId);
+            if (!apt) return;
+            activeAptForConsumption = apt;
+
+            consumptionClientInfo.textContent = `客戶：${apt.name} | 電話：${apt.phone} | 日期：${apt.date}`;
             consumptionRowsContainer.innerHTML = '';
 
             const existingHistory = storeData.history.find(h => h.phone === apt.phone && h.date === apt.date && h.time === apt.time);
@@ -997,4 +989,517 @@
                 </div>
                 <div class="sm:col-span-3">
                     <label class="block text-[10px] text-morandi-brown mb-0.5">折後</label>
-                    <input type="number" class="row-discount w-full bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1.5 text-xs text-morandi-darkBrown font-bold text-morandi-sage
+                    <input type="number" class="row-discount w-full bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1.5 text-xs text-morandi-darkBrown font-bold text-morandi-sage" value="${discount}" required>
+                </div>
+                <div class="sm:col-span-1 flex items-end justify-center pt-3">
+                    <button type="button" class="remove-row-btn text-red-500 hover:text-red-700 font-bold text-xs p-1 cursor-pointer">✕</button>
+                </div>
+            `;
+            
+            div.querySelectorAll('input').forEach(inp => inp.addEventListener('input', calculateConsumptionTotal));
+            div.querySelector('.remove-row-btn').addEventListener('click', () => {
+                if (consumptionRowsContainer.children.length > 1) {
+                    div.remove();
+                    calculateConsumptionTotal();
+                } else {
+                    alert('至少需要保留一項消費項目');
+                }
+            });
+
+            consumptionRowsContainer.appendChild(div);
+        }
+
+        addConsumptionRowBtn.addEventListener('click', () => addConsumptionRow('', 0, 0));
+
+        function calculateConsumptionTotal() {
+            let total = 0;
+            document.querySelectorAll('.row-discount').forEach(inp => {
+                total += Number(inp.value) || 0;
+            });
+            consumptionTotalDisplay.textContent = total.toLocaleString();
+            consumptionTotalInput.value = total;
+        }
+
+        document.getElementById('consumptionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!activeAptForConsumption) return;
+
+            const items = [];
+            let total = 0;
+            document.querySelectorAll('#consumptionRowsContainer > div').forEach(row => {
+                const name = row.querySelector('.row-name').value;
+                const amount = Number(row.querySelector('.row-amount').value) || 0;
+                const discount = Number(row.querySelector('.row-discount').value) || 0;
+                items.push({ name, amount, discount });
+                total += discount;
+            });
+
+            const note = document.getElementById('consumptionNote').value || activeAptForConsumption.note;
+
+            const existingIndex = storeData.history.findIndex(h => h.phone === activeAptForConsumption.phone && h.date === activeAptForConsumption.date && h.time === activeAptForConsumption.time);
+
+            if (existingIndex !== -1) {
+                storeData.history[existingIndex].items = items;
+                storeData.history[existingIndex].total = total;
+                storeData.history[existingIndex].stylist = activeAptForConsumption.stylist;
+                storeData.history[existingIndex].note = note;
+            } else {
+                storeData.history.unshift({
+                    id: Date.now(),
+                    date: activeAptForConsumption.date,
+                    time: activeAptForConsumption.time,
+                    name: activeAptForConsumption.name,
+                    phone: activeAptForConsumption.phone,
+                    items,
+                    total,
+                    stylist: activeAptForConsumption.stylist,
+                    note
+                });
+            }
+
+            saveStoreData();
+            consumptionModal.classList.add('hidden');
+            alert('消費紀錄已成功儲存並同步更新！');
+        });
+
+        // History Search
+        const historySearchInput = document.getElementById('historySearchInput');
+        const searchHistoryBtn = document.getElementById('searchHistoryBtn');
+        const historyResultContainer = document.getElementById('historyResultContainer');
+
+        searchHistoryBtn.addEventListener('click', performHistorySearch);
+        historySearchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performHistorySearch(); });
+
+        function performHistorySearch() {
+            const keyword = historySearchInput.value.trim().toLowerCase();
+            if (!keyword) {
+                historyResultContainer.innerHTML = `<div class="text-center py-10 text-morandi-brown text-xs">請輸入客戶姓名或電話進行查詢</div>`;
+                return;
+            }
+
+            const matchingClients = storeData.clients.filter(c => c.name.toLowerCase().includes(keyword) || c.phone.includes(keyword));
+            const matchingHistory = storeData.history.filter(h => h.name.toLowerCase().includes(keyword) || h.phone.includes(keyword));
+
+            if (matchingClients.length === 0 && matchingHistory.length === 0) {
+                historyResultContainer.innerHTML = `<div class="text-center py-10 text-morandi-brown text-xs">找不到符合「${keyword}」的客戶資料與消費紀錄</div>`;
+                return;
+            }
+
+            const client = matchingClients[0] || { id: null, name: matchingHistory[0].name, phone: matchingHistory[0].phone, note: '' };
+            const clientHistory = storeData.history.filter(h => h.phone === client.phone || h.name === client.name);
+
+            const yearsMap = {};
+            clientHistory.forEach(h => {
+                const year = h.date.split('-')[0];
+                if (!yearsMap[year]) yearsMap[year] = [];
+                yearsMap[year].push(h);
+            });
+
+            let html = `
+                <div class="bg-morandi-lightMint/40 rounded-3xl p-6 border border-morandi-mint/30 space-y-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-morandi-darkBeige/30">
+                        <div class="w-full sm:w-auto space-y-2">
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] text-morandi-sage font-bold">姓名：</label>
+                                <input type="text" id="editClientNameInput" value="${client.name}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs font-semibold text-morandi-darkBrown">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] text-morandi-sage font-bold">電話：</label>
+                                <input type="text" id="editClientPhoneInput" value="${client.phone}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs text-morandi-darkBrown">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] text-morandi-sage font-bold">備註：</label>
+                                <input type="text" id="editClientNoteInput" value="${client.note || ''}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs text-morandi-darkBrown w-full">
+                            </div>
+                            <button type="button" onclick="updateClientDetails('${client.phone}')" class="bg-morandi-darkBrown text-white text-[11px] font-bold px-4 py-1.5 rounded-xl hover:bg-morandi-brown transition-all mt-1 cursor-pointer">儲存客戶資料修改</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-morandi-brown">選擇顯示年度：</span>
+                            <select id="historyYearSelect" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1.5 text-xs text-morandi-darkBrown">
+                                ${Object.keys(yearsMap).length > 0 ? Object.keys(yearsMap).sort().reverse().map(y => `<option value="${y}">${y} 年</option>`).join('') : `<option value="${new Date().getFullYear()}">${new Date().getFullYear()} 年</option>`}
+                            </select>
+                        </div>
+                    </div>
+                    <div id="historyYearDetails"></div>
+                </div>
+            `;
+
+            historyResultContainer.innerHTML = html;
+
+            const yearSelect = document.getElementById('historyYearSelect');
+            if (yearSelect) {
+                renderYearHistoryDetails(client.phone, yearSelect.value, yearsMap);
+                yearSelect.addEventListener('change', (e) => renderYearHistoryDetails(client.phone, e.target.value, yearsMap));
+            }
+        }
+
+        window.updateClientDetails = function(oldPhone) {
+            const newName = document.getElementById('editClientNameInput').value;
+            const newPhone = document.getElementById('editClientPhoneInput').value;
+            const newNote = document.getElementById('editClientNoteInput').value;
+
+            const targetClient = storeData.clients.find(c => c.phone === oldPhone);
+            if (targetClient) {
+                targetClient.name = newName;
+                targetClient.phone = newPhone;
+                targetClient.note = newNote;
+            } else {
+                storeData.clients.push({ id: Date.now(), name: newName, phone: newPhone, joinDate: todayStr, note: newNote });
+            }
+            storeData.history.forEach(h => {
+                if (h.phone === oldPhone) {
+                    h.name = newName;
+                    h.phone = newPhone;
+                }
+            });
+            saveStoreData();
+            alert('客戶資料已成功更新！');
+            performHistorySearch();
+        };
+
+        function renderYearHistoryDetails(phone, year, yearsMap) {
+            const container = document.getElementById('historyYearDetails');
+            const records = yearsMap[year] || [];
+            let yearTotal = 0;
+            records.forEach(r => yearTotal += Number(r.total) || 0);
+
+            let tableHtml = `
+                <div class="mb-4 flex items-center justify-between">
+                    <span class="text-xs font-serif font-bold text-morandi-darkBrown">📅 ${year} 年度消費總金額：</span>
+                    <span class="text-base font-serif font-bold text-morandi-sage">NT$ ${yearTotal.toLocaleString()}</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-morandi-darkBrown">
+                        <thead class="bg-white/80 text-morandi-brown border-b border-morandi-darkBeige/20">
+                            <tr>
+                                <th class="p-2.5">日期 / 時段</th>
+                                <th class="p-2.5">項目與金額折後</th>
+                                <th class="p-2.5">設計師</th>
+                                <th class="p-2.5 text-right">小計</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            if (records.length === 0) {
+                tableHtml += `<tr><td colspan="4" class="p-4 text-center text-morandi-brown">該年度尚無消費紀錄</td></tr>`;
+            } else {
+                records.forEach(r => {
+                    const itemsDesc = Array.isArray(r.items) 
+                        ? r.items.map(i => `${i.name} (原:${i.amount} → 折:${i.discount})`).join('<br>')
+                        : (r.service || '一般美髮服務');
+                    tableHtml += `
+                        <tr class="border-b border-morandi-darkBeige/20 bg-white/50">
+                            <td class="p-2.5 font-semibold">${r.date} ${r.time || ''}</td>
+                            <td class="p-2.5">${itemsDesc}<br><span class="text-[10px] text-morandi-sage">備註：${r.note || '無'}</span></td>
+                            <td class="p-2.5">${r.stylist || '不指定'}</td>
+                            <td class="p-2.5 text-right font-bold text-morandi-darkBrown">NT$ ${r.total}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            tableHtml += `</tbody></table></div>`;
+            container.innerHTML = tableHtml;
+        }
+
+        function renderAdminClients() {
+            const tbody = document.getElementById('adminClientsTableBody');
+            tbody.innerHTML = '';
+            if (storeData.clients.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-morandi-brown">目前尚無客戶建檔紀錄</td></tr>`;
+                return;
+            }
+            storeData.clients.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-morandi-darkBeige/20 hover:bg-morandi-lightMint/30";
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-morandi-darkBrown">${c.name}</td>
+                    <td class="p-3">${c.phone}</td>
+                    <td class="p-3">${c.joinDate}</td>
+                    <td class="p-3">${c.note || '無'}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="editClient(${c.id})" class="bg-morandi-lightMint hover:bg-morandi-mint text-morandi-darkBrown px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all mr-1 cursor-pointer">編輯</button>
+                        <button onclick="deleteClient(${c.id})" class="bg-red-100 hover:bg-red-200 text-red-600 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer">刪除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.deleteClient = function(id) {
+            storeData.clients = storeData.clients.filter(c => c.id !== id);
+            saveStoreData();
+            renderAdminClients();
+        };
+
+        function renderAdminTimeSlotsConfig() {
+            const grid = document.getElementById('adminTimeSlotsConfigGrid');
+            const cfgDate = document.getElementById('adminTimeSlotConfigDate').value || todayStr;
+            const currentEnabledSlots = storeData.timeSlotsConfig[cfgDate] || allPossibleSlots;
+
+            grid.innerHTML = '';
+            allPossibleSlots.forEach(slot => {
+                const isOpen = currentEnabledSlots.includes(slot);
+                const label = document.createElement('label');
+                label.className = "cursor-pointer border rounded-xl p-2.5 flex items-center gap-2 bg-white hover:border-morandi-mint text-xs";
+                label.innerHTML = `
+                    <input type="checkbox" value="${slot}" class="admin-slot-cb rounded text-morandi-sage focus:ring-morandi-mint" ${isOpen ? 'checked' : ''}>
+                    <span class="font-semibold text-morandi-darkBrown">${slot}</span>
+                `;
+                grid.appendChild(label);
+            });
+        }
+
+        document.getElementById('saveTimeSlotsBtn').addEventListener('click', () => {
+            const cfgDate = document.getElementById('adminTimeSlotConfigDate').value || todayStr;
+            const checkedCbs = document.querySelectorAll('.admin-slot-cb:checked');
+            storeData.timeSlotsConfig[cfgDate] = Array.from(checkedCbs).map(cb => cb.value);
+            saveStoreData();
+            alert(`已成功儲存 ${cfgDate} 的時段開放設定！`);
+        });
+
+        function renderAdminStylists() {
+            const container = document.getElementById('adminStylistsList');
+            container.innerHTML = '';
+            storeData.stylists.forEach((st, idx) => {
+                const div = document.createElement('div');
+                div.className = "border border-morandi-darkBeige/30 rounded-2xl p-4 flex items-center justify-between bg-white";
+                
+                const deleteBtnHtml = st.name === "秀秀" 
+                    ? `<span class="text-[10px] text-morandi-sage px-3 py-1.5 italic">預設固定</span>`
+                    : `<button type="button" onclick="deleteStylist(${idx})" class="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer">刪除</button>`;
+
+                div.innerHTML = `
+                    <div>
+                        <button type="button" onclick="showStylistRevenue('${st.name}')" class="font-bold text-morandi-darkBrown text-sm hover:underline text-left block cursor-pointer">
+                            ✂ ${st.name} <span class="text-[10px] text-morandi-sage font-normal ml-2">(點擊查看營收統計)</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${deleteBtnHtml}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.showStylistRevenue = function(stylistName) {
+            document.getElementById('stylistRevModalTitle').textContent = `設計師營收統計：${stylistName}`;
+            
+            const modalBody = document.getElementById('stylistRevModalBody');
+            modalBody.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-morandi-lightMint/30 p-3 rounded-2xl space-y-2 border border-morandi-mint/30">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-morandi-brown font-semibold">選擇查看日期：</label>
+                            <input type="date" id="revDateSelect" value="${todayStr}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs text-morandi-darkBrown">
+                        </div>
+                        <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-morandi-darkBeige/30">
+                            <span class="text-xs text-morandi-brown font-semibold">該日營收加總：</span>
+                            <span id="revDayResult" class="text-sm font-bold text-morandi-darkBrown">NT$ 0</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-morandi-lightMint/30 p-3 rounded-2xl space-y-2 border border-morandi-mint/30">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs text-morandi-brown font-semibold">選擇查看月份：</label>
+                            <input type="month" id="revMonthSelect" value="${todayStr.substring(0, 7)}" class="bg-white border border-morandi-darkBeige/40 rounded-xl px-3 py-1 text-xs text-morandi-darkBrown">
+                        </div>
+                        <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-morandi-darkBeige/30">
+                            <span class="text-xs text-morandi-brown font-semibold">該月營收加總：</span>
+                            <span id="revMonthResult" class="text-sm font-bold text-morandi-sage">NT$ 0</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('stylistRevenueModal').classList.remove('hidden');
+
+            const dateSel = document.getElementById('revDateSelect');
+            const monthSel = document.getElementById('revMonthSelect');
+            const dayRes = document.getElementById('revDayResult');
+            const monthRes = document.getElementById('revMonthResult');
+
+            function calculateRevs() {
+                const dVal = dateSel.value;
+                const mVal = monthSel.value;
+
+                let dayTotal = 0;
+                let monthTotal = 0;
+
+                storeData.history.forEach(h => {
+                    if (h.stylist === stylistName) {
+                        const amt = Number(h.total) || 0;
+                        if (h.date === dVal) dayTotal += amt;
+                        if (h.date.startsWith(mVal)) monthTotal += amt;
+                    }
+                });
+
+                dayRes.textContent = `NT$ ${dayTotal.toLocaleString()}`;
+                monthRes.textContent = `NT$ ${monthTotal.toLocaleString()}`;
+            }
+
+            calculateRevs();
+            dateSel.addEventListener('change', calculateRevs);
+            monthSel.addEventListener('change', calculateRevs);
+        };
+
+        document.getElementById('closeStylistRevModalBtn').addEventListener('click', () => {
+            document.getElementById('stylistRevenueModal').classList.add('hidden');
+        });
+
+        window.deleteStylist = function(idx) {
+            if (storeData.stylists[idx].name === "秀秀") {
+                alert("「秀秀」為固定預設設計師，不可刪除。");
+                return;
+            }
+            storeData.stylists.splice(idx, 1);
+            saveStoreData();
+            renderAdminStylists();
+            renderClientStylists();
+        };
+
+        document.getElementById('holidayForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const d = document.getElementById('newHolidayDate').value;
+            if (d && !storeData.holidays.includes(d)) {
+                storeData.holidays.push(d);
+                saveStoreData();
+                renderAdminHolidays();
+                document.getElementById('newHolidayDate').value = '';
+                alert('已成功新增店休日！');
+            }
+        });
+
+        function renderAdminHolidays() {
+            const ul = document.getElementById('holidaysListUl');
+            ul.innerHTML = '';
+            if (storeData.holidays.length === 0) {
+                ul.innerHTML = `<li class="text-morandi-brown">目前尚無額外設定的店休日</li>`;
+                return;
+            }
+            storeData.holidays.forEach((hDate, idx) => {
+                const li = document.createElement('li');
+                li.className = "flex items-center justify-between bg-morandi-lightMint/40 p-2.5 rounded-xl";
+                li.innerHTML = `
+                    <span class="font-semibold text-morandi-darkBrown">📅 ${hDate}</span>
+                    <button onclick="deleteHoliday(${idx})" class="text-red-600 hover:text-red-800 font-bold text-xs cursor-pointer">移除</button>
+                `;
+                ul.appendChild(li);
+            });
+        }
+
+        window.deleteHoliday = function(idx) {
+            storeData.holidays.splice(idx, 1);
+            saveStoreData();
+            renderAdminHolidays();
+        };
+
+        const genericModal = document.getElementById('adminGenericModal');
+        const closeGenericModalBtn = document.getElementById('closeGenericModalBtn');
+        const saveGenericModalBtn = document.getElementById('saveGenericModalBtn');
+        const genericModalTitle = document.getElementById('genericModalTitle');
+        const genericModalBody = document.getElementById('genericModalBody');
+        let currentModalMode = '';
+        let editingClientId = null;
+
+        closeGenericModalBtn.addEventListener('click', () => genericModal.classList.add('hidden'));
+
+        document.getElementById('addClientBtn').addEventListener('click', () => {
+            currentModalMode = 'client';
+            editingClientId = null;
+            genericModalTitle.textContent = "手動建立新客戶資料";
+            genericModalBody.innerHTML = `
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">姓名</label>
+                    <input type="text" id="cliName" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">電話</label>
+                    <input type="tel" id="cliPhone" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">備註</label>
+                    <input type="text" id="cliNote" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown">
+                </div>
+            `;
+            genericModal.classList.remove('hidden');
+        });
+
+        window.editClient = function(id) {
+            const client = storeData.clients.find(c => c.id === id);
+            if (!client) return;
+            currentModalMode = 'editClient';
+            editingClientId = id;
+            genericModalTitle.textContent = "編輯客戶資料與備註";
+            genericModalBody.innerHTML = `
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">姓名</label>
+                    <input type="text" id="cliName" value="${client.name}" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">電話</label>
+                    <input type="tel" id="cliPhone" value="${client.phone}" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">備註</label>
+                    <input type="text" id="cliNote" value="${client.note || ''}" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown">
+                </div>
+            `;
+            genericModal.classList.remove('hidden');
+        };
+
+        document.getElementById('addStylistBtn').addEventListener('click', () => {
+            currentModalMode = 'stylist';
+            genericModalTitle.textContent = "新增設計師";
+            genericModalBody.innerHTML = `
+                <div>
+                    <label class="block font-semibold text-morandi-brown mb-1">設計師名稱</label>
+                    <input type="text" id="styName" placeholder="例如：安娜" class="w-full bg-morandi-lightMint/50 border border-morandi-darkBeige/40 rounded-xl px-3 py-2 text-morandi-darkBrown" required>
+                </div>
+            `;
+            genericModal.classList.remove('hidden');
+        });
+
+        saveGenericModalBtn.addEventListener('click', () => {
+            if (currentModalMode === 'client') {
+                const name = document.getElementById('cliName').value;
+                const phone = document.getElementById('cliPhone').value;
+                const note = document.getElementById('cliNote').value;
+                if (!name || !phone) { alert('請填寫姓名與電話'); return; }
+                storeData.clients.push({ id: Date.now(), name, phone, joinDate: todayStr, note });
+            } else if (currentModalMode === 'editClient') {
+                const name = document.getElementById('cliName').value;
+                const phone = document.getElementById('cliPhone').value;
+                const note = document.getElementById('cliNote').value;
+                const client = storeData.clients.find(c => c.id === editingClientId);
+                if (client) {
+                    client.name = name;
+                    client.phone = phone;
+                    client.note = note;
+                }
+            } else if (currentModalMode === 'stylist') {
+                const name = document.getElementById('styName').value;
+                if (!name) { alert('請輸入設計師名稱'); return; }
+                if (!storeData.stylists.some(s => s.name === name)) {
+                    storeData.stylists.push({ name });
+                }
+                renderClientStylists();
+            }
+            saveStoreData();
+            genericModal.classList.add('hidden');
+            renderAdminDashboard();
+            alert('儲存成功！');
+        });
+
+        renderClientServices();
+        renderClientStylists();
+        renderTimeSlots();
+
+        // Google Apps Script 雲端同步 API 網址
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznZnBvvx3j9nhzvc767SnvwyTL9PJym8scyTCYke9A1XzJTZ0Yx54Xq_UcV8L7_MjE8A/exec";
+
+    </script>
+</body>
+</html>
